@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Currency Converter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-image: url(images/images/converter-bg.png);
+        background-size: 100%;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .converter {
+        background-image: url(images/images/rupees.png);
+        background-size: 110%;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        width: 300px;
+      }
+      .input-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #f39c12;
+        color: white;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background-color: #e67e22;
+      }
+      #result {
+        margin-top: 20px;
+        font-size: 25px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="converter">
+      <h1>Crypto Currency Converter</h1>
+      <div class="input-group">
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" placeholder="Enter amount" />
+      </div>
+      <div class="input-group">
+        <label for="fromCurrency">From Currency:</label>
+        <select id="fromCurrency">
+          <option value="bitcoin">Bitcoin (BTC)</option>
+          <option value="ethereum">Ethereum (ETH)</option>
+          <option value="binancecoin">Binance Coin (BNB)</option>
+          <option value="tether">Tether (USDT)</option>
+          <option value="solana">Solana (SOL)</option>
+          <option value="cardano">Cardano (ADA)</option>
+          <option value="polkadot">Polkadot (DOT)</option>
+          <option value="ripple">Ripple (XRP)</option>
+          <option value="litecoin">Litecoin (LTC)</option>
+          <option value="chainlink">Chainlink (LINK)</option>
+          <option value="dogecoin">Dogecoin (DOGE)</option>
+          <option value="stellar">Stellar (XLM)</option>
+          <option value="monero">Monero (XMR)</option>
+          <option value="tron">Tron (TRX)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="toCurrency">To Currency:</label>
+        <select id="toCurrency">
+          <option value="usd">United States Dollar (USD)</option>
+          <option value="eur">Euro (EUR)</option>
+          <option value="gbp">British Pound (GBP)</option>
+          <option value="jpy">Japanese Yen (JPY)</option>
+          <option value="aud">Australian Dollar (AUD)</option>
+          <option value="inr">Indian Rupee (INR)</option>
+          <option value="cad">Canadian Dollar (CAD)</option>
+          <option value="chf">Swiss Franc (CHF)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="voiceSelect">Voice:</label>
+        <select id="voiceSelect"></select>
+      </div>
+      <button onclick="convert()">Convert</button>
+      <button onclick="reset()">Reset</button>
+      <div id="result"></div>
+    </div>
+    <script>
+      let voices = [];
+
+      function populateVoices() {
+        const voiceSelect = document.getElementById("voiceSelect");
+        voices = speechSynthesis.getVoices();
+        voiceSelect.innerHTML = "";
+        voices.forEach((voice, index) => {
+          const option = document.createElement("option");
+          option.value = index;
+          option.textContent = voice.name;
+          voiceSelect.appendChild(option);
+        });
+      }
+
+      speechSynthesis.onvoiceschanged = populateVoices;
+
+      async function convert() {
+        const amount = document.getElementById("amount").value;
+        const fromCurrency = document.getElementById("fromCurrency").value;
+        const toCurrency = document.getElementById("toCurrency").value;
+        const selectedVoiceIndex = document.getElementById("voiceSelect").value;
+        const response = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${fromCurrency}&vs_currencies=${toCurrency}`
+        );
+        const data = await response.json();
+        const rate = data[fromCurrency][toCurrency];
+        const result = amount * rate;
+        const resultText = `${amount} ${fromCurrency.toUpperCase()} = ${result} ${toCurrency.toUpperCase()}`;
+        document.getElementById("result").innerText = resultText;
+
+        // Convert the result text to speech with selected voice
+        const utterance = new SpeechSynthesisUtterance(resultText);
+        utterance.voice = voices[selectedVoiceIndex];
+        speechSynthesis.speak(utterance);
+      }
+
+      function reset() {
+        document.getElementById("amount").value = "";
+        document.getElementById("fromCurrency").selectedIndex = 0;
+        document.getElementById("toCurrency").selectedIndex = 0;
+        document.getElementById("result").innerText = "";
+        document.getElementById("voiceSelect").selectedIndex = 0;
+      }
+    </script>
+  </body>
+</html>
